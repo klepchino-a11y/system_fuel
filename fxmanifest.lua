@@ -15,12 +15,12 @@ shared_scripts {
 }
 
 client_scripts {
-    'client/main.lua',
+    'client/client.lua',
     'client/hud_and_consumption.lua', -- إضافة HUD + استهلاك
 }
 
 server_scripts {
-    'server/main.lua',
+    'server/server.lua',
 }
 
 files {

@@ -125,7 +125,7 @@ local refuelVehicle = function (veh)
     local ped = PlayerPedId()
     ClearPedTasks(ped)
     local canLiter = GetAmmoInPedWeapon(ped, `WEAPON_PETROLCAN`)
-    local vehFuel = math.floor(exports['fuel_system']:GetFuel(veh) or 0)
+    local vehFuel = math.floor(exports['LegacyFuel']:GetFuel(veh) or 0)
 
     if canLiter == 0 then return Notify(Lang:t('error.no_fuel_can'), 'error') end
     if vehFuel == 100 then return Notify(Lang:t('error.vehicle_full'), 'error') end
@@ -143,14 +143,15 @@ local refuelVehicle = function (veh)
     }, {}, {}, {}, function()
         TriggerServerEvent('qb-fuel:server:setCanFuel', canLiter - liter)
         SetPedAmmo(ped, `WEAPON_PETROLCAN`, canLiter - liter)
--- (تعديل) استخدام LegacyFuel بدل fuel_system و ضمان الحدّ [0..100]
-local targetFuel = vehFuel + liter
-if targetFuel > 100 then targetFuel = 100 end
-if targetFuel < 0   then targetFuel = 0   end
+        -- (تعديل) استخدام LegacyFuel بدل fuel_system و ضمان الحدّ [0..100]
+        local targetFuel = vehFuel + liter
+        if targetFuel > 100 then targetFuel = 100 end
+        if targetFuel < 0 then targetFuel = 0 end
 
-exports['LegacyFuel']:SetFuel(veh, targetFuel)
-Notify(Lang:t('success.refueled'), 'success')
-ClearPedTasks(ped)
+        exports['LegacyFuel']:SetFuel(veh, targetFuel)
+        Notify(Lang:t('success.refueled'), 'success')
+        ClearPedTasks(ped)
+    end)
 
 end
 
@@ -312,19 +313,18 @@ local refillVehicleFuel = function (liter)
             return Notify(Lang:t('error.no_money'), 'error')
         end
 
--- تم الدفع: فكّ الأغراض وحدّث الوقود  (تعديل)
-removeObjects()
+        -- تم الدفع: فكّ الأغراض وحدّث الوقود  (تعديل)
+        removeObjects()
 
--- استخدم LegacyFuel بدل fuel_system
-local currentFuel = exports['LegacyFuel']:GetFuel(veh) or 0
-local newFuel = math.floor(currentFuel) + tonumber(liter)
-if newFuel > 100 then newFuel = 100 end
-if newFuel < 0   then newFuel = 0   end
+        -- استخدم LegacyFuel بدل fuel_system
+        local currentFuel = math.floor(exports['LegacyFuel']:GetFuel(veh) or 0)
+        local refillLitres = math.floor(tonumber(liter) or 0)
+        local newFuel = currentFuel + refillLitres
+        if newFuel > 100 then newFuel = 100 end
+        if newFuel < 0 then newFuel = 0 end
 
-exports['LegacyFuel']:SetFuel(veh, newFuel)
-
-Notify(Lang:t('success.refueled'), 'success')
-ClearPedTasks(ped)
+        Notify(Lang:t('success.refueled'), 'success')
+        ClearPedTasks(ped)
 
     end)
 end
@@ -443,7 +443,7 @@ showFuelMenu = function ()
     SendNUIMessage({
         action = 'show',
         price = Config.FuelPrice,
-        currentFuel = math.floor(exports['fuel_system']:GetFuel(veh) or 0),
+        currentFuel = math.floor(exports['LegacyFuel']:GetFuel(veh) or 0),
     })
     SetNuiFocus(true, true)
 end
